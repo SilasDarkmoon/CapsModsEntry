@@ -1,0 +1,19 @@
+{
+
+    "name": "cn.capstones.resmanager",
+
+    "displayName": "Capstone Res Manager",
+
+    "version": "0.5.0",
+
+    "unity": "2018.3",
+
+    "description": "Capstone Res Manager",
+
+    "keywords": [
+        "unity"
+    ],
+
+    "category": "Unity"
+
+}
