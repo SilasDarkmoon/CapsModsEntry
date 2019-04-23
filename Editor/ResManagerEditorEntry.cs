@@ -55,6 +55,7 @@ namespace Capstones.UnityEditorEx
                         }
                     }
 
+                    HashSet<string> existingmods = new HashSet<string>();
                     foreach (var package in req.Result)
                     {
                         if (package.status == UnityEditor.PackageManager.PackageStatus.Available
@@ -65,6 +66,7 @@ namespace Capstones.UnityEditorEx
                             var mod = System.IO.Path.GetFileNameWithoutExtension(path);
                             if (System.IO.Directory.Exists(path + "/Link~"))
                             {
+                                existingmods.Add(mod);
                                 bool isuptodate = linked.ContainsKey(package.name) && linked[package.name] == path;
                                 if (!isuptodate)
                                 {
@@ -89,6 +91,29 @@ namespace Capstones.UnityEditorEx
                                 }
                                 LinkPackageToMod(package);
                             }
+                        }
+                    }
+                    if (linked.Count != existingmods.Count)
+                    {
+                        List<string> keystodel = new List<string>();
+                        foreach (var kvp in linked)
+                        {
+                            if (!existingmods.Contains(kvp.Key))
+                            {
+                                keystodel.Add(kvp.Key);
+                                var mod = System.IO.Path.GetFileNameWithoutExtension(kvp.Value);
+                                UnlinkOrDeleteDir("Assets/Mods/" + mod + "/Content");
+                                for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
+                                {
+                                    var usdir = UniqueSpecialFolders[i];
+                                    UnlinkOrDeleteDir("Assets/" + usdir + "/Mods/" + mod + "/Content");
+                                }
+                            }
+                        }
+                        linkupdated = true;
+                        for (int i = 0; i < keystodel.Count; ++i)
+                        {
+                            linked.Remove(keystodel[i]);
                         }
                     }
 
