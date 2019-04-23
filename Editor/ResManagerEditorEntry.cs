@@ -69,7 +69,7 @@ namespace Capstones.UnityEditorEx
                                 if (!isuptodate)
                                 {
                                     linkupdated = true;
-                                    UnlinkOrDeleteDir("Assets/Mod/" + mod + "/Content");
+                                    UnlinkOrDeleteDir("Assets/Mods/" + mod + "/Content");
                                     for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
                                     {
                                         var usdir = UniqueSpecialFolders[i];
@@ -78,7 +78,7 @@ namespace Capstones.UnityEditorEx
                                     if (linked.ContainsKey(package.name))
                                     {
                                         var oldmod = System.IO.Path.GetFileNameWithoutExtension(linked[package.name]);
-                                        UnlinkOrDeleteDir("Assets/Mod/" + oldmod + "/Content");
+                                        UnlinkOrDeleteDir("Assets/Mods/" + oldmod + "/Content");
                                         for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
                                         {
                                             var usdir = UniqueSpecialFolders[i];
@@ -141,10 +141,10 @@ namespace Capstones.UnityEditorEx
             var mod = System.IO.Path.GetFileNameWithoutExtension(path);
             if (System.IO.Directory.Exists(path + "/Link~/Mod"))
             {
-                var link = "Assets/Mod/" + mod + "/Content";
+                var link = "Assets/Mods/" + mod + "/Content";
                 if (!System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
                 {
-                    System.IO.Directory.CreateDirectory("Assets/Mod/" + mod);
+                    System.IO.Directory.CreateDirectory("Assets/Mods/" + mod);
                     ResManagerEditorEntryUtils.MakeDirLink(link, path + "/Link~/Mod");
                 }
             }
