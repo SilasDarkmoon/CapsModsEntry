@@ -72,7 +72,7 @@ namespace Capstones.UnityEditorEx
                                 {
                                     linked[package.name] = path;
                                     linkupdated = true;
-                                    UnlinkOrDeleteDir("Assets/Mods/" + mod + "/Content");
+                                    UnlinkOrDeleteDir("Assets/Mods/" + mod);
                                     for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
                                     {
                                         var usdir = UniqueSpecialFolders[i];
@@ -81,7 +81,7 @@ namespace Capstones.UnityEditorEx
                                     if (linked.ContainsKey(package.name))
                                     {
                                         var oldmod = System.IO.Path.GetFileNameWithoutExtension(linked[package.name]);
-                                        UnlinkOrDeleteDir("Assets/Mods/" + oldmod + "/Content");
+                                        UnlinkOrDeleteDir("Assets/Mods/" + oldmod);
                                         for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
                                         {
                                             var usdir = UniqueSpecialFolders[i];
@@ -102,7 +102,7 @@ namespace Capstones.UnityEditorEx
                             {
                                 keystodel.Add(kvp.Key);
                                 var mod = System.IO.Path.GetFileNameWithoutExtension(kvp.Value);
-                                UnlinkOrDeleteDir("Assets/Mods/" + mod + "/Content");
+                                UnlinkOrDeleteDir("Assets/Mods/" + mod);
                                 for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
                                 {
                                     var usdir = UniqueSpecialFolders[i];
@@ -167,7 +167,7 @@ namespace Capstones.UnityEditorEx
             var mod = System.IO.Path.GetFileNameWithoutExtension(path);
             if (System.IO.Directory.Exists(path + "/Link~/Mod"))
             {
-                var link = "Assets/Mods/" + mod + "/Content";
+                var link = "Assets/Mods/" + mod;
                 if (!System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
                 {
                     System.IO.Directory.CreateDirectory("Assets/Mods/" + mod);
