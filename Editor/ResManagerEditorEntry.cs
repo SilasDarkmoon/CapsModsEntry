@@ -68,6 +68,7 @@ namespace Capstones.UnityEditorEx
                                 bool isuptodate = linked.ContainsKey(package.name) && linked[package.name] == path;
                                 if (!isuptodate)
                                 {
+                                    linked[package.name] = path;
                                     linkupdated = true;
                                     UnlinkOrDeleteDir("Assets/Mods/" + mod + "/Content");
                                     for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
