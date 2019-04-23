@@ -1,14 +1,14 @@
 {
 
-    "name": "cn.capstones.resmanager",
+    "name": "cn.capstones.modsentry",
 
-    "displayName": "Capstone Res Manager",
+    "displayName": "Capstone Mods-Framework Entry",
 
-    "version": "0.5.1",
+    "version": "1.0.0",
 
     "unity": "2018.3",
 
-    "description": "Capstone Res Manager",
+    "description": "Capstone Mods-Framework Entry",
 
     "keywords": [
         "unity"
