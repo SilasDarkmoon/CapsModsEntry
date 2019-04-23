@@ -70,24 +70,14 @@ namespace Capstones.UnityEditorEx
                                 bool isuptodate = linked.ContainsKey(package.name) && linked[package.name] == path;
                                 if (!isuptodate)
                                 {
-                                    linked[package.name] = path;
-                                    linkupdated = true;
-                                    UnlinkOrDeleteDir("Assets/Mods/" + mod);
-                                    for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
-                                    {
-                                        var usdir = UniqueSpecialFolders[i];
-                                        UnlinkOrDeleteDir("Assets/" + usdir + "/Mods/" + mod + "/Content");
-                                    }
+                                    UnlinkMod(mod);
                                     if (linked.ContainsKey(package.name))
                                     {
                                         var oldmod = System.IO.Path.GetFileNameWithoutExtension(linked[package.name]);
-                                        UnlinkOrDeleteDir("Assets/Mods/" + oldmod);
-                                        for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
-                                        {
-                                            var usdir = UniqueSpecialFolders[i];
-                                            UnlinkOrDeleteDir("Assets/" + usdir + "/Mods/" + oldmod + "/Content");
-                                        }
+                                        UnlinkMod(oldmod);
                                     }
+                                    linked[package.name] = path;
+                                    linkupdated = true;
                                 }
                                 LinkPackageToMod(package);
                             }
@@ -102,12 +92,7 @@ namespace Capstones.UnityEditorEx
                             {
                                 keystodel.Add(kvp.Key);
                                 var mod = System.IO.Path.GetFileNameWithoutExtension(kvp.Value);
-                                UnlinkOrDeleteDir("Assets/Mods/" + mod);
-                                for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
-                                {
-                                    var usdir = UniqueSpecialFolders[i];
-                                    UnlinkOrDeleteDir("Assets/" + usdir + "/Mods/" + mod + "/Content");
-                                }
+                                UnlinkMod(mod);
                             }
                         }
                         linkupdated = true;
@@ -142,6 +127,20 @@ namespace Capstones.UnityEditorEx
 
         private static readonly string[] UniqueSpecialFolders = new[] { "Plugins", "Standard Assets" };
 
+        private static void UnlinkMod(string mod)
+        {
+            UnlinkOrDeleteDir("Assets/Mods/" + mod);
+            for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
+            {
+                var usdir = UniqueSpecialFolders[i];
+                var udir = "Assets/" + usdir + "/Mods/" + mod;
+                UnlinkOrDeleteDir(udir + "/Content");
+                if (System.IO.Directory.Exists(udir))
+                {
+                    System.IO.Directory.Delete(udir, true);
+                }
+            }
+        }
         private static void UnlinkOrDeleteDir(string path)
         {
             if (ResManagerEditorEntryUtils.IsDirLink(path))
