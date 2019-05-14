@@ -1,6 +1,8 @@
 {
     "name": "ResManagerEditorEntry",
-    "references": [],
+    "references": [
+        "ResManagerEntry"
+    ],
     "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
