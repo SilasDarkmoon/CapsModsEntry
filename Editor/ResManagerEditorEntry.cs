@@ -11,6 +11,8 @@ namespace Capstones.UnityEditorEx
     [InitializeOnLoad]
     public static class ResManagerEditorEntry
     {
+        public static void ShouldAlreadyInit() { }
+
         static ResManagerEditorEntry()
         {
             CapsPackageEditor.OnPackagesChanged += () =>
