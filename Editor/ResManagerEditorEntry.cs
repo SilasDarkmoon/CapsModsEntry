@@ -54,7 +54,11 @@ namespace Capstones.UnityEditorEx
                         )
                     {
                         var path = package.resolvedPath;
-                        var mod = System.IO.Path.GetFileNameWithoutExtension(path);
+                        var mod = System.IO.Path.GetFileName(path);
+                        if (mod.Contains("@"))
+                        {
+                            mod = mod.Substring(0, mod.IndexOf('@'));
+                        }
                         if (System.IO.Directory.Exists(path + "/Link~"))
                         {
                             existingmods.Add(mod);
@@ -64,7 +68,11 @@ namespace Capstones.UnityEditorEx
                                 UnlinkMod(mod);
                                 if (linked.ContainsKey(package.name))
                                 {
-                                    var oldmod = System.IO.Path.GetFileNameWithoutExtension(linked[package.name]);
+                                    var oldmod = System.IO.Path.GetFileName(linked[package.name]);
+                                    if (oldmod.Contains("@"))
+                                    {
+                                        oldmod = oldmod.Substring(0, oldmod.IndexOf('@'));
+                                    }
                                     UnlinkMod(oldmod);
                                 }
                                 linked[package.name] = path;
@@ -82,7 +90,11 @@ namespace Capstones.UnityEditorEx
                         if (!existingmods.Contains(kvp.Key))
                         {
                             keystodel.Add(kvp.Key);
-                            var mod = System.IO.Path.GetFileNameWithoutExtension(kvp.Value);
+                            var mod = System.IO.Path.GetFileName(kvp.Value);
+                            if (mod.Contains("@"))
+                            {
+                                mod = mod.Substring(0, mod.IndexOf('@'));
+                            }
                             UnlinkMod(mod);
                         }
                     }
@@ -150,7 +162,11 @@ namespace Capstones.UnityEditorEx
         private static void LinkPackageToMod(UnityEditor.PackageManager.PackageInfo package)
         {
             var path = package.resolvedPath;
-            var mod = System.IO.Path.GetFileNameWithoutExtension(path);
+            var mod = System.IO.Path.GetFileName(path);
+            if (mod.Contains("@"))
+            {
+                mod = mod.Substring(0, mod.IndexOf('@'));
+            }
             if (System.IO.Directory.Exists(path + "/Link~/Mod"))
             {
                 var link = "Assets/Mods/" + mod;
