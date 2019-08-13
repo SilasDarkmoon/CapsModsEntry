@@ -10,6 +10,12 @@ namespace Capstones.UnityEditorEx
 {
     public static class CapsPackageEditor
     {
+        [Serializable]
+        public class PackagesInfoList
+        {
+            public List<UnityEditor.PackageManager.PackageInfo> Packages;
+        }
+
         private static Dictionary<string, UnityEditor.PackageManager.PackageInfo> _Packages;
         public static Dictionary<string, UnityEditor.PackageManager.PackageInfo> Packages { get { return _Packages; } }
         private static event Action _OnPackagesChanged = () => { };
@@ -31,6 +37,33 @@ namespace Capstones.UnityEditorEx
 
         public static void RefreshPackages()
         {
+            if (_Packages == null)
+            {
+                // Load cache
+                if (System.IO.File.Exists("EditorOutput/Runtime/packages.txt"))
+                {
+                    try
+                    {
+                        var json = System.IO.File.ReadAllText("EditorOutput/Runtime/packages.txt");
+                        PackagesInfoList list = new PackagesInfoList();
+                        EditorJsonUtility.FromJsonOverwrite(json, list);
+                        List<UnityEditor.PackageManager.PackageInfo> packages = list.Packages;
+                        if (packages.Count > 0)
+                        {
+                            var newinfos = new Dictionary<string, UnityEditor.PackageManager.PackageInfo>();
+                            for (int i = 0; i < packages.Count; ++i)
+                            {
+                                var package = packages[i];
+                                newinfos[package.name] = package;
+                            }
+                            _Packages = newinfos;
+                            _OnPackagesChanged();
+                        }
+                    }
+                    catch { }
+                }
+            }
+
             var req = UnityEditor.PackageManager.Client.List(true);
             EditorBridge.TerminableUpdate += () =>
             {
@@ -45,6 +78,17 @@ namespace Capstones.UnityEditorEx
                     {
                         _Packages = newinfos;
                         _OnPackagesChanged();
+                        // Save cache
+                        try
+                        {
+                            System.IO.Directory.CreateDirectory("EditorOutput/Runtime/");
+                            List<UnityEditor.PackageManager.PackageInfo> packages = new List<UnityEditor.PackageManager.PackageInfo>(newinfos.Values);
+                            PackagesInfoList list = new PackagesInfoList();
+                            list.Packages = packages;
+                            var json = EditorJsonUtility.ToJson(list, true);
+                            System.IO.File.WriteAllText("EditorOutput/Runtime/packages.txt", json);
+                        }
+                        catch { }
                     }
                     //else
                     //{

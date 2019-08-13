@@ -129,6 +129,7 @@ namespace Capstones.UnityEditorEx
         private static void UnlinkMod(string mod)
         {
             UnlinkOrDeleteDir("Assets/Mods/" + mod);
+            ResManagerEditorEntryUtils.RemoveGitIgnore("Assets/Mods/.gitignore", mod + "/");
             for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
             {
                 var usdir = UniqueSpecialFolders[i];
@@ -174,6 +175,7 @@ namespace Capstones.UnityEditorEx
                 {
                     System.IO.Directory.CreateDirectory("Assets/Mods/");
                     ResManagerEditorEntryUtils.MakeDirLink(link, path + "/Link~/Mod");
+                    ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/");
                 }
             }
             for (int i = 0; i < UniqueSpecialFolders.Length; ++i)

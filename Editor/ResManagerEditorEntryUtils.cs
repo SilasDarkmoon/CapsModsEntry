@@ -220,6 +220,95 @@ namespace Capstones.UnityEditorEx
             }
         }
 
+        public static void AddGitIgnore(string gitignorepath, params string[] items)
+        {
+            List<string> lines = new List<string>();
+            HashSet<string> lineset = new HashSet<string>();
+            if (System.IO.File.Exists(gitignorepath))
+            {
+                try
+                {
+                    using (var sr = new System.IO.StreamReader(gitignorepath))
+                    {
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            lines.Add(line);
+                            lineset.Add(line);
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            if (items != null)
+            {
+                for (int i = 0; i < items.Length; ++i)
+                {
+                    var item = items[i];
+                    if (lineset.Add(item))
+                    {
+                        lines.Add(item);
+                    }
+                }
+            }
+
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(gitignorepath));
+            using (var sw = new System.IO.StreamWriter(gitignorepath))
+            {
+                for (int i = 0; i < lines.Count; ++i)
+                {
+                    sw.WriteLine(lines[i]);
+                }
+            }
+        }
+
+        public static void RemoveGitIgnore(string gitignorepath, params string[] items)
+        {
+            List<string> lines = new List<string>();
+            HashSet<string> removes = new HashSet<string>();
+            if (items != null)
+            {
+                removes.UnionWith(items);
+            }
+            if (System.IO.File.Exists(gitignorepath))
+            {
+                try
+                {
+                    using (var sr = new System.IO.StreamReader(gitignorepath))
+                    {
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            if (!removes.Contains(line))
+                            {
+                                lines.Add(line);
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }
+            if (lines.Count == 0)
+            {
+                if (System.IO.File.Exists(gitignorepath))
+                {
+                    System.IO.File.Delete(gitignorepath);
+                }
+            }
+            else
+            {
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(gitignorepath));
+                using (var sw = new System.IO.StreamWriter(gitignorepath))
+                {
+                    for (int i = 0; i < lines.Count; ++i)
+                    {
+                        sw.WriteLine(lines[i]);
+                    }
+                }
+            }
+        }
+
         public static string GetFileMD5(string path)
         {
             try
