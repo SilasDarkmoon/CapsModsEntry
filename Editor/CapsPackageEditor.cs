@@ -219,7 +219,10 @@ namespace Capstones.UnityEditorEx
                 {
                     return true;
                 }
-                return kvp.Value.resolvedPath != old.resolvedPath;
+                if (kvp.Value.resolvedPath != old.resolvedPath)
+                {
+                    return true;
+                }
             }
             return false;
         }
