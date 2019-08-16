@@ -76,8 +76,6 @@ namespace Capstones.UnityEditorEx
                     }
                     if (_Packages == null || PackagesChanged(_Packages, newinfos))
                     {
-                        _Packages = newinfos;
-                        _OnPackagesChanged();
                         // Save cache
                         try
                         {
@@ -89,6 +87,8 @@ namespace Capstones.UnityEditorEx
                             System.IO.File.WriteAllText("EditorOutput/Runtime/packages.txt", json);
                         }
                         catch { }
+                        _Packages = newinfos;
+                        _OnPackagesChanged();
                     }
                     //else
                     //{
