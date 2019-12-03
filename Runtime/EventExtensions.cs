@@ -43,19 +43,7 @@ namespace Capstones.UnityEngineEx
                     order = ((EventOrderAttribute)attrs[0]).Order;
                 }
             }
-            var index = thiz._InvocationList.BinarySearch(new HandlerInfo() { Order = order }, _Comparer);
-            if (index >= 0)
-            {
-                for (index = index + 1; index < thiz._InvocationList.Count && thiz._InvocationList[index].Order == order; ++index)
-                {
-                }
-                thiz._InvocationList.Insert(index, new HandlerInfo() { Order = order, Handler = handler });
-            }
-            else
-            {
-                thiz._InvocationList.Insert(~index, new HandlerInfo() { Order = order, Handler = handler });
-            }
-            thiz._CachedCombined = null;
+            thiz.AddHandler(handler, order);
             return thiz;
         }
         public static OrderedEvent<T> operator-(OrderedEvent<T> thiz, T handler)
@@ -69,6 +57,23 @@ namespace Capstones.UnityEngineEx
                 }
             }
             return thiz;
+        }
+
+        public void AddHandler(T handler, int order)
+        {
+            var index = _InvocationList.BinarySearch(new HandlerInfo() { Order = order }, _Comparer);
+            if (index >= 0)
+            {
+                for (index = index + 1; index < _InvocationList.Count && _InvocationList[index].Order == order; ++index)
+                {
+                }
+                _InvocationList.Insert(index, new HandlerInfo() { Order = order, Handler = handler });
+            }
+            else
+            {
+                _InvocationList.Insert(~index, new HandlerInfo() { Order = order, Handler = handler });
+            }
+            _CachedCombined = null;
         }
 
         private T _CachedCombined;
