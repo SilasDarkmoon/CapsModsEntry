@@ -175,7 +175,7 @@ namespace Capstones.UnityEditorEx
                 {
                     System.IO.Directory.CreateDirectory("Assets/Mods/");
                     ResManagerEditorEntryUtils.MakeDirLink(link, path + "/Link~/Mod");
-                    ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/");
+                    ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod);
                 }
             }
             for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
