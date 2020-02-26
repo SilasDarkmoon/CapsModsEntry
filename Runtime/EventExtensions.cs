@@ -15,14 +15,29 @@ namespace Capstones.UnityEngineEx
             Order = order;
         }
     }
-    public class OrderedEvent<T> where T : Delegate
+    public class OrderedDelegate<T> where T : class //, Delegate // Delegate constraint is for C# 7.3 only
     {
-        private struct HandlerInfo
+        public T Handler;
+        public int Order;
+
+        public OrderedDelegate(int order, T handler)
+        {
+            Order = order;
+            Handler = handler;
+        }
+        //public static implicit operator T(OrderedDelegate<T> thiz)
+        //{
+        //    return thiz.Handler;
+        //}
+    }
+    public class OrderedEvent<T> where T : class //, Delegate // Delegate constraint is for C# 7.3 only
+    {
+        protected struct HandlerInfo
         {
             public T Handler;
             public int Order;
         }
-        private List<HandlerInfo> _InvocationList = new List<HandlerInfo>();
+        protected List<HandlerInfo> _InvocationList = new List<HandlerInfo>();
         private class HandlerInfoComparer : IComparer<HandlerInfo>
         {
             public int Compare(HandlerInfo x, HandlerInfo y)
@@ -32,30 +47,14 @@ namespace Capstones.UnityEngineEx
         }
         private static HandlerInfoComparer _Comparer = new HandlerInfoComparer();
 
-        public static OrderedEvent<T> operator+(OrderedEvent<T> thiz, T handler)
+        public static OrderedEvent<T> operator +(OrderedEvent<T> thiz, T handler)
         {
-            int order = 0;
-            if (handler.Method != null)
-            {
-                var attrs = handler.Method.GetCustomAttributes(typeof(EventOrderAttribute), true);
-                if (attrs != null && attrs.Length > 0)
-                {
-                    order = ((EventOrderAttribute)attrs[0]).Order;
-                }
-            }
-            thiz.AddHandler(handler, order);
+            thiz.AddHandler(handler);
             return thiz;
         }
-        public static OrderedEvent<T> operator-(OrderedEvent<T> thiz, T handler)
+        public static OrderedEvent<T> operator -(OrderedEvent<T> thiz, T handler)
         {
-            for (int i = 0; i < thiz._InvocationList.Count; ++i)
-            {
-                if (thiz._InvocationList[i].Handler.Equals(handler))
-                {
-                    thiz._InvocationList.RemoveAt(i--);
-                    thiz._CachedCombined = null;
-                }
-            }
+            thiz.RemoveHandler(handler);
             return thiz;
         }
 
@@ -75,8 +74,31 @@ namespace Capstones.UnityEngineEx
             }
             _CachedCombined = null;
         }
+        public void AddHandler(T handler)
+        {
+            AddHandler(handler, OrderedEventUtils.GetOrder((Delegate)(object)handler));
+        }
+        public void AddHandler(OrderedDelegate<T> handlerWrapper)
+        {
+            AddHandler(handlerWrapper.Handler, handlerWrapper.Order);
+        }
+        public void RemoveHandler(T handler)
+        {
+            for (int i = 0; i < _InvocationList.Count; ++i)
+            {
+                if (_InvocationList[i].Handler.Equals(handler))
+                {
+                    _InvocationList.RemoveAt(i--);
+                    _CachedCombined = null;
+                }
+            }
+        }
+        public void RemoveHandler(OrderedDelegate<T> handlerWrapper)
+        {
+            RemoveHandler(handlerWrapper.Handler);
+        }
 
-        private T _CachedCombined;
+        protected T _CachedCombined;
         public T Handler
         {
             get
@@ -88,7 +110,7 @@ namespace Capstones.UnityEngineEx
                 return _CachedCombined;
             }
         }
-        private void CombineHandlers()
+        protected virtual void CombineHandlers()
         {
             if (_InvocationList.Count == 0)
             {
@@ -96,12 +118,12 @@ namespace Capstones.UnityEngineEx
             }
             else
             {
-                Delegate del = (T)_InvocationList[0].Handler.Clone();
+                Delegate del = (Delegate)((Delegate)(object)_InvocationList[0].Handler).Clone();
                 for (int i = 1; i < _InvocationList.Count; ++i)
                 {
-                    del = Delegate.Combine(del, _InvocationList[i].Handler);
+                    del = Delegate.Combine(del, (Delegate)(object)_InvocationList[i].Handler);
                 }
-                _CachedCombined = (T)del;
+                _CachedCombined = (T)(object)del;
             }
         }
 
@@ -121,6 +143,23 @@ namespace Capstones.UnityEngineEx
             OrderedEvent<T> rv = new OrderedEvent<T>();
             rv += handler;
             return rv;
+        }
+    }
+
+    public static class OrderedEventUtils
+    {
+        public static int GetOrder(this Delegate handler)
+        {
+            int order = 0;
+            if (handler != null && handler.Method != null)
+            {
+                var attrs = handler.Method.GetCustomAttributes(typeof(EventOrderAttribute), true);
+                if (attrs != null && attrs.Length > 0)
+                {
+                    order = ((EventOrderAttribute)attrs[0]).Order;
+                }
+            }
+            return order;
         }
     }
 }
