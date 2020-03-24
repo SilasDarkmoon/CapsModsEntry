@@ -97,6 +97,14 @@ namespace Capstones.UnityEngineEx
         {
             RemoveHandler(handlerWrapper.Handler);
         }
+        public void RemoveAll()
+        {
+            if (_InvocationList.Count > 0)
+            {
+                _InvocationList.Clear();
+                _CachedCombined = null;
+            }
+        }
 
         protected T _CachedCombined;
         public T Handler
