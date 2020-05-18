@@ -42,7 +42,20 @@ namespace Capstones.UnityEngineEx
         {
             public int Compare(HandlerInfo x, HandlerInfo y)
             {
-                return x.Order - y.Order;
+                if (x.Order < y.Order)
+                {
+                    return -1;
+                }
+                else if (x.Order > y.Order)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+                // may overflow:
+                //return x.Order - y.Order;
             }
         }
         private static HandlerInfoComparer _Comparer = new HandlerInfoComparer();
