@@ -118,6 +118,17 @@ namespace Capstones.UnityEngineEx
                 _CachedCombined = null;
             }
         }
+        public void MergeHandlers(OrderedEvent<T> other)
+        {
+            if (other != null)
+            {
+                for (int i = 0; i < other._InvocationList.Count; ++i)
+                {
+                    var info = other._InvocationList[i];
+                    this.AddHandler(info.Handler, info.Order);
+                }
+            }
+        }
 
         protected T _CachedCombined;
         public T Handler
