@@ -62,6 +62,52 @@ namespace Capstones.UnityEditorEx
                     }
                     catch { }
                 }
+                else
+                {
+                    var allassets = AssetDatabase.GetAllAssetPaths();
+                    if (allassets != null)
+                    {
+                        HashSet<string> pnames = new HashSet<string>();
+                        var newinfos = new Dictionary<string, UnityEditor.PackageManager.PackageInfo>();
+                        for (int i = 0; i < allassets.Length; ++i)
+                        {
+                            var asset = allassets[i];
+                            if (asset.StartsWith("Packages/"))
+                            {
+                                var sub = asset.Substring("Packages/".Length);
+                                var split = sub.IndexOf('/');
+                                if (split > 0)
+                                {
+                                    var pname = sub.Substring(0, split);
+                                    if (!pnames.Contains(pname))
+                                    {
+                                        var pinfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(asset);
+                                        if (pinfo != null)
+                                        {
+                                            pnames.Add(pname);
+                                            newinfos[pname] = pinfo;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (newinfos.Count > 0)
+                        {
+                            try
+                            {
+                                System.IO.Directory.CreateDirectory("EditorOutput/Runtime/");
+                                List<UnityEditor.PackageManager.PackageInfo> packages = new List<UnityEditor.PackageManager.PackageInfo>(newinfos.Values);
+                                PackagesInfoList list = new PackagesInfoList();
+                                list.Packages = packages;
+                                var json = EditorJsonUtility.ToJson(list, true);
+                                System.IO.File.WriteAllText("EditorOutput/Runtime/packages.txt", json);
+                            }
+                            catch { }
+                            _Packages = newinfos;
+                            _OnPackagesChanged();
+                        }
+                    }
+                }
             }
 
             var req = UnityEditor.PackageManager.Client.List(true);
