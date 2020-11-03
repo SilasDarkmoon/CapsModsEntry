@@ -93,6 +93,11 @@ namespace Capstones.UnityEditorEx
                         }
                         if (newinfos.Count > 0)
                         {
+                            _Packages = newinfos;
+                            if (!System.IO.File.Exists("mcs.rsp"))
+                            {
+                                FixAssemblyReference();
+                            }
                             try
                             {
                                 System.IO.Directory.CreateDirectory("EditorOutput/Runtime/");
@@ -103,7 +108,6 @@ namespace Capstones.UnityEditorEx
                                 System.IO.File.WriteAllText("EditorOutput/Runtime/packages.txt", json);
                             }
                             catch { }
-                            _Packages = newinfos;
                             _OnPackagesChanged();
                         }
                     }
@@ -147,6 +151,28 @@ namespace Capstones.UnityEditorEx
                     return false;
                 }
             };
+        }
+
+        public static void FixAssemblyReference()
+        {
+            CapsModEditorEntry.FixAssemblyReference();
+        }
+        internal static HashSet<string> GetAllModsInternal()
+        {
+            HashSet<string> mods = new HashSet<string>();
+            if (System.IO.Directory.Exists("Assets/Mods"))
+            {
+                var subs = System.IO.Directory.GetDirectories("Assets/Mods");
+                if (subs != null)
+                {
+                    for (int i = 0; i < subs.Length; ++i)
+                    {
+                        var dir = subs[i];
+                        mods.Add(System.IO.Path.GetFileName(dir));
+                    }
+                }
+            }
+            return mods;
         }
 
         [MenuItem("Mods/Force Refresh Package", priority = 200000)]
