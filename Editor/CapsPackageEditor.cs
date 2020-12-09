@@ -179,7 +179,82 @@ namespace Capstones.UnityEditorEx
         public static void ForceRefreshPackages()
         {
             _Packages = null;
+            System.IO.File.Delete("EditorOutput/Runtime/packages.txt");
             RefreshPackages();
+        }
+
+        public static void RemovePackage(string pname)
+        {
+            if (_Packages == null)
+            {
+                RefreshPackages();
+                return;
+            }
+            if (_Packages.Remove(pname))
+            {
+                // Save cache
+                try
+                {
+                    System.IO.Directory.CreateDirectory("EditorOutput/Runtime/");
+                    List<UnityEditor.PackageManager.PackageInfo> packages = new List<UnityEditor.PackageManager.PackageInfo>(_Packages.Values);
+                    PackagesInfoList list = new PackagesInfoList();
+                    list.Packages = packages;
+                    var json = EditorJsonUtility.ToJson(list, true);
+                    System.IO.File.WriteAllText("EditorOutput/Runtime/packages.txt", json);
+                }
+                catch { }
+                _OnPackagesChanged();
+            }
+        }
+        public static void AddPackageOfAsset(string asset)
+        {
+            if (_Packages == null)
+            {
+                RefreshPackages();
+                return;
+            }
+            var pname = asset.Substring("Packages/".Length);
+            var index = pname.IndexOf('/');
+            if (index > 0)
+            {
+                pname = pname.Substring(0, index);
+                if (!_Packages.ContainsKey(pname))
+                {
+                    var pinfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(asset);
+                    if (pinfo != null)
+                    {
+                        _Packages[pname] = pinfo;
+                        // Save cache
+                        try
+                        {
+                            System.IO.Directory.CreateDirectory("EditorOutput/Runtime/");
+                            List<UnityEditor.PackageManager.PackageInfo> packages = new List<UnityEditor.PackageManager.PackageInfo>(_Packages.Values);
+                            PackagesInfoList list = new PackagesInfoList();
+                            list.Packages = packages;
+                            var json = EditorJsonUtility.ToJson(list, true);
+                            System.IO.File.WriteAllText("EditorOutput/Runtime/packages.txt", json);
+                        }
+                        catch { }
+                        _OnPackagesChanged();
+                    }
+                }
+            }
+        }
+
+        private static void ResavePackageCache()
+        {
+            // Save cache
+            try
+            {
+                System.IO.Directory.CreateDirectory("EditorOutput/Runtime/");
+                List<UnityEditor.PackageManager.PackageInfo> packages = new List<UnityEditor.PackageManager.PackageInfo>(_Packages.Values);
+                PackagesInfoList list = new PackagesInfoList();
+                list.Packages = packages;
+                var json = EditorJsonUtility.ToJson(list, true);
+                System.IO.File.WriteAllText("EditorOutput/Runtime/packages.txt", json);
+            }
+            catch { }
+            _OnPackagesChanged();
         }
 
         private class PackageMonitor : AssetPostprocessor
@@ -191,6 +266,7 @@ namespace Capstones.UnityEditorEx
                     RefreshPackages();
                     return;
                 }
+                bool changed = false;
                 if (importedAssets != null)
                 {
                     for (int i = 0; i < importedAssets.Length; ++i)
@@ -205,8 +281,12 @@ namespace Capstones.UnityEditorEx
                                 pname = pname.Substring(0, index);
                                 if (!_Packages.ContainsKey(pname))
                                 {
-                                    RefreshPackages();
-                                    return;
+                                    var pinfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(asset);
+                                    if (pinfo != null)
+                                    {
+                                        _Packages[pname] = pinfo;
+                                        changed = true;
+                                    }
                                 }
                             }
                         }
@@ -226,8 +306,8 @@ namespace Capstones.UnityEditorEx
                                 pname = pname.Substring(0, index);
                                 if (asset == "Packages/" + pname + "/package.json")
                                 {
-                                    RefreshPackages();
-                                    return;
+                                    _Packages.Remove(pname);
+                                    changed = true;
                                 }
                             }
                         }
@@ -247,8 +327,12 @@ namespace Capstones.UnityEditorEx
                                 pname = pname.Substring(0, index);
                                 if (!_Packages.ContainsKey(pname))
                                 {
-                                    RefreshPackages();
-                                    return;
+                                    var pinfo = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(asset);
+                                    if (pinfo != null)
+                                    {
+                                        _Packages[pname] = pinfo;
+                                        changed = true;
+                                    }
                                 }
                             }
                         }
@@ -268,12 +352,16 @@ namespace Capstones.UnityEditorEx
                                 pname = pname.Substring(0, index);
                                 if (asset == "Packages/" + pname + "/package.json")
                                 {
-                                    RefreshPackages();
-                                    return;
+                                    _Packages.Remove(pname);
+                                    changed = true;
                                 }
                             }
                         }
                     }
+                }
+                if (changed)
+                {
+                    ResavePackageCache();
                 }
             }
         }
