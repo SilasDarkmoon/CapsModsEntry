@@ -62,8 +62,8 @@ namespace Capstones.UnityEditorEx
                     }
                     catch { }
                 }
-                else
-                {
+                if (_Packages == null)
+                { // not cached or the cache file is broken.
                     var allassets = AssetDatabase.GetAllAssetPaths();
                     if (allassets != null)
                     {
@@ -264,7 +264,14 @@ namespace Capstones.UnityEditorEx
                 if (_Packages == null)
                 {
                     RefreshPackages();
-                    return;
+                    if (_Packages == null)
+                    {
+                        ForceRefreshPackages(); // some mistake?
+                        if (_Packages == null)
+                        {
+                            return; // more mistake?
+                        }
+                    }
                 }
                 bool changed = false;
                 if (importedAssets != null)
