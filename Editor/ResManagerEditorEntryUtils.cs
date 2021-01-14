@@ -165,6 +165,12 @@ namespace Capstones.UnityEditorEx
 
         public static bool ExecuteProcess(System.Diagnostics.ProcessStartInfo si)
         {
+            bool safeWaitMode = true;
+#if UNITY_EDITOR_WIN
+            safeWaitMode = false;
+#endif
+            // TODO: on Apple M1, we must use safeWaitMode. we should test non-safeMode on Mac-on-Intel and Linux and add "#if" here. NOTICE: use SystemInfo.processorType to get cpu model name.
+
             si.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
             si.UseShellExecute = false;
             si.RedirectStandardOutput = true;
@@ -178,10 +184,31 @@ namespace Capstones.UnityEditorEx
 
             process.ErrorDataReceived += (s, e) => WriteProcessOutput(s as System.Diagnostics.Process, e.Data, true);
 
+            System.Threading.ManualResetEventSlim waitHandleForProcess = null;
+            if (safeWaitMode)
+            {
+                waitHandleForProcess = new System.Threading.ManualResetEventSlim();
+                process.Exited += (s, e) => waitHandleForProcess.Set();
+            }
+
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            process.WaitForExit();
+
+            using (waitHandleForProcess)
+            {
+                while (!process.HasExited)
+                {
+                    if (safeWaitMode)
+                    {
+                        waitHandleForProcess.Wait(1000);
+                    }
+                    else
+                    {
+                        process.WaitForExit(1000);
+                    }
+                }
+            }
 
             if (process.ExitCode != 0)
             {
