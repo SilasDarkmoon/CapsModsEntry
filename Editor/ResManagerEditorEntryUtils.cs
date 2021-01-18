@@ -177,47 +177,49 @@ namespace Capstones.UnityEditorEx
             si.RedirectStandardError = true;
             si.CreateNoWindow = true;
 
-            var process = new System.Diagnostics.Process();
-            process.StartInfo = si;
-
-            process.OutputDataReceived += (s, e) => WriteProcessOutput(s as System.Diagnostics.Process, e.Data, false);
-
-            process.ErrorDataReceived += (s, e) => WriteProcessOutput(s as System.Diagnostics.Process, e.Data, true);
-
-            System.Threading.ManualResetEventSlim waitHandleForProcess = null;
-            if (safeWaitMode)
+            using (var process = new System.Diagnostics.Process())
             {
-                waitHandleForProcess = new System.Threading.ManualResetEventSlim();
-                process.Exited += (s, e) => waitHandleForProcess.Set();
-            }
+                process.StartInfo = si;
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+                process.OutputDataReceived += (s, e) => WriteProcessOutput(s as System.Diagnostics.Process, e.Data, false);
 
-            using (waitHandleForProcess)
-            {
-                while (!process.HasExited)
+                process.ErrorDataReceived += (s, e) => WriteProcessOutput(s as System.Diagnostics.Process, e.Data, true);
+
+                System.Threading.ManualResetEventSlim waitHandleForProcess = null;
+                if (safeWaitMode)
                 {
-                    if (safeWaitMode)
+                    waitHandleForProcess = new System.Threading.ManualResetEventSlim();
+                    process.Exited += (s, e) => waitHandleForProcess.Set();
+                }
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                using (waitHandleForProcess)
+                {
+                    while (!process.HasExited)
                     {
-                        waitHandleForProcess.Wait(1000);
-                    }
-                    else
-                    {
-                        process.WaitForExit(1000);
+                        if (safeWaitMode)
+                        {
+                            waitHandleForProcess.Wait(1000);
+                        }
+                        else
+                        {
+                            process.WaitForExit(1000);
+                        }
                     }
                 }
-            }
 
-            if (process.ExitCode != 0)
-            {
-                Debug.LogErrorFormat("Error when execute process {0} {1}", si.FileName, si.Arguments);
-                return false;
-            }
-            else
-            {
-                return true;
+                if (process.ExitCode != 0)
+                {
+                    Debug.LogErrorFormat("Error when execute process {0} {1}", si.FileName, si.Arguments);
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
         private static void WriteProcessOutput(System.Diagnostics.Process p, string data, bool isError)
