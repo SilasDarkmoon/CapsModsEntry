@@ -128,8 +128,29 @@ namespace Capstones.UnityEditorEx
 
         private static void UnlinkMod(string mod)
         {
-            UnlinkOrDeleteDir("Assets/Mods/" + mod);
-            ResManagerEditorEntryUtils.RemoveGitIgnore("Assets/Mods/.gitignore", mod + "/");
+            var moddir = "Assets/Mods/" + mod;
+            if (UnlinkDir(moddir))
+            {
+                ResManagerEditorEntryUtils.RemoveGitIgnore("Assets/Mods/.gitignore", mod);
+            }
+            else
+            {
+                if (System.IO.Directory.Exists(moddir))
+                {
+                    var subs = System.IO.Directory.GetDirectories(moddir);
+                    foreach (var sub in subs)
+                    {
+                        if (UnlinkDir(sub))
+                        {
+                            var part = System.IO.Path.GetFileName(sub);
+                            ResManagerEditorEntryUtils.RemoveGitIgnore("Assets/Mods/.gitignore", mod + "/" + part);
+                            ResManagerEditorEntryUtils.RemoveGitIgnore("Assets/Mods/.gitignore", mod + "/" + part + ".meta");
+                        }
+                    }
+                }
+            }
+            //UnlinkOrDeleteDir("Assets/Mods/" + mod);
+            //ResManagerEditorEntryUtils.RemoveGitIgnore("Assets/Mods/.gitignore", mod);
             for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
             {
                 var usdir = UniqueSpecialFolders[i];
@@ -140,6 +161,20 @@ namespace Capstones.UnityEditorEx
                     System.IO.Directory.Delete(udir, true);
                 }
             }
+        }
+        private static bool UnlinkDir(string path)
+        {
+            if (ResManagerEditorEntryUtils.IsDirLink(path))
+            {
+                ResManagerEditorEntryUtils.DeleteDirLink(path);
+                return true;
+            }
+            if (System.IO.File.Exists(path))
+            {
+                System.IO.File.Delete(path);
+                return true;
+            }
+            return false;
         }
         private static void UnlinkOrDeleteDir(string path)
         {
@@ -168,9 +203,10 @@ namespace Capstones.UnityEditorEx
             {
                 mod = mod.Substring(0, mod.IndexOf('@'));
             }
+            var moddir = "Assets/Mods/" + mod;
             if (System.IO.Directory.Exists(path + "/Link~/Mod"))
             {
-                var link = "Assets/Mods/" + mod;
+                var link = moddir;
                 if (!System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
                 {
                     System.IO.Directory.CreateDirectory("Assets/Mods/");
@@ -187,6 +223,45 @@ namespace Capstones.UnityEditorEx
                 {
                     System.IO.Directory.CreateDirectory("Assets/" + usdir + "/Mods/" + mod);
                     ResManagerEditorEntryUtils.MakeDirLink(link, target);
+                }
+            }
+            var subs = System.IO.Directory.GetDirectories(path + "/Link~/");
+            foreach (var sub in subs)
+            {
+                var part = System.IO.Path.GetFileName(sub);
+                if (part.Equals("Mod", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    continue;
+                }
+                bool isudir = false;
+                for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
+                {
+                    var usdir = UniqueSpecialFolders[i];
+                    if (part.Equals(usdir, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        isudir = true;
+                        break;
+                    }
+                }
+                if (isudir)
+                {
+                    continue;
+                }
+                var link = moddir + "/" + part;
+                var target = sub;
+                if (System.IO.Directory.Exists(target) && !System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
+                {
+                    if (!System.IO.Directory.Exists(moddir))
+                    {
+                        System.IO.Directory.CreateDirectory(moddir);
+                    }
+                    if (part.Contains("\\") || part.Contains("/"))
+                    {
+                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(link));
+                    }
+                    ResManagerEditorEntryUtils.MakeDirLink(link, target);
+                    ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/" + part);
+                    ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/" + part + ".meta");
                 }
             }
         }
