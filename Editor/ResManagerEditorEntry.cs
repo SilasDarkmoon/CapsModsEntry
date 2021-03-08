@@ -229,7 +229,7 @@ namespace Capstones.UnityEditorEx
             if (System.IO.File.Exists(path + "/Link~/link.config"))
             {
                 dirMap = new Dictionary<string, string>();
-                var lines = System.IO.File.ReadLines(path + "/Link~/link.config"));
+                var lines = System.IO.File.ReadLines(path + "/Link~/link.config");
                 foreach (var line in lines)
                 {
                     if (!string.IsNullOrEmpty(line))
