@@ -225,43 +225,83 @@ namespace Capstones.UnityEditorEx
                     ResManagerEditorEntryUtils.MakeDirLink(link, target);
                 }
             }
-            var subs = System.IO.Directory.GetDirectories(path + "/Link~/");
-            foreach (var sub in subs)
+            Dictionary<string, string> dirMap = null;
+            if (System.IO.File.Exists(path + "/Link~/link.config"))
             {
-                var part = System.IO.Path.GetFileName(sub);
-                if (part.Equals("Mod", StringComparison.InvariantCultureIgnoreCase))
+                dirMap = new Dictionary<string, string>();
+                var lines = System.IO.File.ReadLines(path + "/Link~/link.config"));
+                foreach (var line in lines)
                 {
-                    continue;
-                }
-                bool isudir = false;
-                for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
-                {
-                    var usdir = UniqueSpecialFolders[i];
-                    if (part.Equals(usdir, StringComparison.InvariantCultureIgnoreCase))
+                    if (!string.IsNullOrEmpty(line))
                     {
-                        isudir = true;
-                        break;
+                        var parts = line.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (parts != null && parts.Length > 0)
+                        {
+                            var dirname = parts[0];
+                            if (!string.IsNullOrEmpty(dirname))
+                            {
+                                var linkname = dirname;
+                                if (parts.Length > 1)
+                                {
+                                    linkname = parts[1];
+                                    if (string.IsNullOrEmpty(linkname))
+                                    {
+                                        linkname = dirname;
+                                    }
+                                }
+                                dirMap[dirname.ToLower()] = linkname;
+                            }
+                        }
                     }
                 }
-                if (isudir)
+            }
+            {
+                var subs = System.IO.Directory.GetDirectories(path + "/Link~/");
+                foreach (var sub in subs)
                 {
-                    continue;
-                }
-                var link = moddir + "/" + part;
-                var target = sub;
-                if (System.IO.Directory.Exists(target) && !System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
-                {
-                    if (!System.IO.Directory.Exists(moddir))
+                    var part = System.IO.Path.GetFileName(sub);
+                    if (part.Equals("Mod", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        System.IO.Directory.CreateDirectory(moddir);
+                        continue;
                     }
-                    if (part.Contains("\\") || part.Contains("/"))
+                    if (dirMap != null && !dirMap.ContainsKey(part.ToLower()))
                     {
-                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(link));
+                        continue;
                     }
-                    ResManagerEditorEntryUtils.MakeDirLink(link, target);
-                    ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/" + part);
-                    ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/" + part + ".meta");
+                    bool isudir = false;
+                    for (int i = 0; i < UniqueSpecialFolders.Length; ++i)
+                    {
+                        var usdir = UniqueSpecialFolders[i];
+                        if (part.Equals(usdir, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            isudir = true;
+                            break;
+                        }
+                    }
+                    if (isudir)
+                    {
+                        continue;
+                    }
+                    var link = moddir + "/" + part;
+                    if (dirMap != null)
+                    {
+                        link = moddir + "/" + dirMap[part.ToLower()];
+                    }
+                    var target = sub;
+                    if (System.IO.Directory.Exists(target) && !System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
+                    {
+                        if (!System.IO.Directory.Exists(moddir))
+                        {
+                            System.IO.Directory.CreateDirectory(moddir);
+                        }
+                        if (part.Contains("\\") || part.Contains("/"))
+                        {
+                            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(link));
+                        }
+                        ResManagerEditorEntryUtils.MakeDirLink(link, target);
+                        ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/" + part);
+                        ResManagerEditorEntryUtils.AddGitIgnore("Assets/Mods/.gitignore", mod + "/" + part + ".meta");
+                    }
                 }
             }
         }
