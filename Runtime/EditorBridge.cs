@@ -87,7 +87,11 @@ namespace Capstones.UnityEngineEx
             {
 #if UNITY_EDITOR
                 _OnDelayedCallOnce += value;
-                UnityEditor.EditorApplication.delayCall = DoDelayedCallOnce;
+                if (UnityEditor.EditorApplication.delayCall == null)
+                {
+                    UnityEditor.EditorApplication.delayCall = () => { };
+                }
+                UnityEditor.EditorApplication.delayCall += DoDelayedCallOnce;
 #endif
             }
             remove
@@ -116,7 +120,11 @@ namespace Capstones.UnityEngineEx
             {
 #if UNITY_EDITOR
                 _OnUpdate += value;
-                UnityEditor.EditorApplication.update = CallUpdate;
+                if (UnityEditor.EditorApplication.update == null)
+                {
+                    UnityEditor.EditorApplication.update = () => { };
+                }
+                UnityEditor.EditorApplication.update += CallUpdate;
                 UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
 #endif
             }
@@ -134,7 +142,11 @@ namespace Capstones.UnityEngineEx
             {
 #if UNITY_EDITOR
                 _TerminableUpdate += value;
-                UnityEditor.EditorApplication.update = CallUpdate;
+                if (UnityEditor.EditorApplication.update == null)
+                {
+                    UnityEditor.EditorApplication.update = () => { };
+                }
+                UnityEditor.EditorApplication.update += CallUpdate;
                 UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
 #endif
             }
@@ -152,7 +164,11 @@ namespace Capstones.UnityEngineEx
             {
 #if UNITY_EDITOR
                 _WeakUpdate += value;
-                UnityEditor.EditorApplication.update = CallUpdate;
+                if (UnityEditor.EditorApplication.update == null)
+                {
+                    UnityEditor.EditorApplication.update = () => { };
+                }
+                UnityEditor.EditorApplication.update += CallUpdate;
 #endif
             }
             remove
@@ -192,6 +208,10 @@ namespace Capstones.UnityEngineEx
             if (UnityEditor.EditorApplication.update == CallUpdate)
             {
                 UnityEditor.EditorApplication.update = null;
+            }
+            else if (UnityEditor.EditorApplication.update != null)
+            {
+                UnityEditor.EditorApplication.update -= CallUpdate;
             }
         }
         private static bool CallTerminableUpdate()
