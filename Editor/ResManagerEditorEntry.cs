@@ -194,6 +194,32 @@ namespace Capstones.UnityEditorEx
                 }
             }
         }
+        private static void FixLinkSourceDir(string link)
+        {
+            if (System.IO.File.Exists(link))
+            {
+                System.IO.File.Move(link, link + ".backup~");
+            }
+            else if (System.IO.Directory.Exists(link))
+            {
+                var dirinfo = new System.IO.DirectoryInfo(link);
+                if ((dirinfo.Attributes & System.IO.FileAttributes.ReparsePoint) == System.IO.FileAttributes.ReparsePoint)
+                {
+                    ResManagerEditorEntryUtils.DeleteDirLink(link);
+                }
+                else
+                {
+                    if (dirinfo.GetFileSystemInfos().Length == 0)
+                    {
+                        dirinfo.Delete();
+                    }
+                    else
+                    {
+                        dirinfo.MoveTo(link + ".backup~");
+                    }
+                }
+            }
+        }
 
         private static void LinkPackageToMod(UnityEditor.PackageManager.PackageInfo package)
         {
@@ -207,6 +233,7 @@ namespace Capstones.UnityEditorEx
             if (System.IO.Directory.Exists(path + "/Link~/Mod"))
             {
                 var link = moddir;
+                FixLinkSourceDir(link);
                 if (!System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
                 {
                     System.IO.Directory.CreateDirectory("Assets/Mods/");
@@ -219,6 +246,7 @@ namespace Capstones.UnityEditorEx
                 var usdir = UniqueSpecialFolders[i];
                 var link = "Assets/" + usdir + "/Mods/" + mod + "/Content";
                 var target = path + "/Link~/" + usdir;
+                FixLinkSourceDir(link);
                 if (System.IO.Directory.Exists(target) && !System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
                 {
                     System.IO.Directory.CreateDirectory("Assets/" + usdir + "/Mods/" + mod);
@@ -288,6 +316,7 @@ namespace Capstones.UnityEditorEx
                         link = moddir + "/" + dirMap[part.ToLower()];
                     }
                     var target = sub;
+                    FixLinkSourceDir(link);
                     if (System.IO.Directory.Exists(target) && !System.IO.Directory.Exists(link) && !System.IO.File.Exists(link))
                     {
                         if (!System.IO.Directory.Exists(moddir))
