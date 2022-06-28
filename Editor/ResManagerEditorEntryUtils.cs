@@ -11,7 +11,7 @@ namespace Capstones.UnityEditorEx
         {
             if (Application.platform == RuntimePlatform.OSXEditor)
             {
-                var si = new System.Diagnostics.ProcessStartInfo("chflags", "hidden \"" + path + "\"");
+                var si = new System.Diagnostics.ProcessStartInfo("chflags", "-h hidden \"" + path + "\"");
                 var p = System.Diagnostics.Process.Start(si);
                 p.WaitForExit();
             }
@@ -36,7 +36,7 @@ namespace Capstones.UnityEditorEx
         {
             if (Application.platform == RuntimePlatform.OSXEditor)
             {
-                var si = new System.Diagnostics.ProcessStartInfo("chflags", "nohidden \"" + path + "\"");
+                var si = new System.Diagnostics.ProcessStartInfo("chflags", "-h nohidden \"" + path + "\"");
                 var p = System.Diagnostics.Process.Start(si);
                 p.WaitForExit();
             }
@@ -61,7 +61,7 @@ namespace Capstones.UnityEditorEx
         {
             if (Application.platform == RuntimePlatform.OSXEditor)
             {
-                var si = new System.Diagnostics.ProcessStartInfo("ls", "-lOd \"" + path + "\"");
+                var si = new System.Diagnostics.ProcessStartInfo("ls", "-lOdP \"" + path + "\"");
                 si.UseShellExecute = false;
                 si.RedirectStandardOutput = true;
                 var p = System.Diagnostics.Process.Start(si);
@@ -72,9 +72,10 @@ namespace Capstones.UnityEditorEx
                     return false;
                 }
                 output = output.Trim();
-                if (output.EndsWith(path, System.StringComparison.InvariantCultureIgnoreCase))
+                int indexpath;
+                if ((indexpath = output.IndexOf(path, System.StringComparison.InvariantCultureIgnoreCase)) >= 0)
                 {
-                    output = output.Substring(0, output.Length - path.Length).Trim();
+                    output = output.Substring(0, indexpath).Trim();
                 }
                 var idsplit = output.IndexOfAny(new[] { '/', '\\' });
                 if (idsplit >= 0)
@@ -140,6 +141,24 @@ namespace Capstones.UnityEditorEx
             }
             else
             {
+                if (System.IO.Directory.Exists(link))
+                {
+                    Debug.LogWarning("Symbol link src is already exists! " + link);
+                    var dirinfo = new System.IO.DirectoryInfo(link);
+                    if ((dirinfo.Attributes & System.IO.FileAttributes.ReparsePoint) == System.IO.FileAttributes.ReparsePoint)
+                    {
+                        DeleteDirLink(link);
+                    }
+                    else
+                    {
+                        dirinfo.Delete();
+                    }
+                }
+                if (System.IO.File.Exists(link))
+                {
+                    Debug.LogError("Symbol link is already exists (as file)! " + link);
+                    System.IO.File.Delete(link);
+                }
                 var si = new System.Diagnostics.ProcessStartInfo("ln", "-s \"" + target + "\"" + " \"" + link + "\"");
                 var p = System.Diagnostics.Process.Start(si);
                 p.WaitForExit();

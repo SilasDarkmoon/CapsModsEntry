@@ -194,11 +194,29 @@ namespace Capstones.UnityEditorEx
                 }
             }
         }
+        private static string GetBackupPath(string src)
+        {
+            var dst = src + ".backup~";
+            int index = 0;
+            while (System.IO.File.Exists(dst) || System.IO.Directory.Exists(dst))
+            {
+                dst = src + ".backup" + (index++) + "~";
+            }
+            return dst;
+        }
         private static void FixLinkSourceDir(string link)
         {
+            while (link.EndsWith("/") || link.EndsWith("\\"))
+            {
+                link = link.Substring(0, link.Length - 1);
+            }
             if (System.IO.File.Exists(link))
             {
-                System.IO.File.Move(link, link + ".backup~");
+                System.IO.File.Move(link, GetBackupPath(link));
+                if (System.IO.File.Exists(link + ".meta"))
+                {
+                    System.IO.File.Delete(link + ".meta");
+                }
             }
             else if (System.IO.Directory.Exists(link))
             {
@@ -215,8 +233,12 @@ namespace Capstones.UnityEditorEx
                     }
                     else
                     {
-                        dirinfo.MoveTo(link + ".backup~");
+                        dirinfo.MoveTo(link + GetBackupPath(link));
                     }
+                }
+                if (System.IO.File.Exists(link + ".meta"))
+                {
+                    System.IO.File.Delete(link + ".meta");
                 }
             }
         }
