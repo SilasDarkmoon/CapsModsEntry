@@ -141,23 +141,35 @@ namespace Capstones.UnityEditorEx
             }
             else
             {
-                if (System.IO.Directory.Exists(link))
+                for (int i = 0; i < 3; ++i)
                 {
-                    Debug.LogWarning("Symbol link src is already exists! " + link);
-                    var dirinfo = new System.IO.DirectoryInfo(link);
-                    if ((dirinfo.Attributes & System.IO.FileAttributes.ReparsePoint) == System.IO.FileAttributes.ReparsePoint)
+                    if (System.IO.Directory.Exists(link))
                     {
-                        DeleteDirLink(link);
+                        Debug.LogWarning("Symbol link src is already exists! " + link);
+                        var dirinfo = new System.IO.DirectoryInfo(link);
+                        if ((dirinfo.Attributes & System.IO.FileAttributes.ReparsePoint) == System.IO.FileAttributes.ReparsePoint)
+                        {
+                            DeleteDirLink(link);
+                        }
+                        else
+                        {
+                            dirinfo.Delete();
+                        }
+                    }
+                    else if (System.IO.File.Exists(link))
+                    {
+                        Debug.LogError("Symbol link is already exists (as file)! " + link);
+                        System.IO.File.Delete(link);
                     }
                     else
                     {
-                        dirinfo.Delete();
+                        break;
                     }
                 }
-                if (System.IO.File.Exists(link))
+                if (System.IO.Directory.Exists(link) || System.IO.File.Exists(link))
                 {
-                    Debug.LogError("Symbol link is already exists (as file)! " + link);
-                    System.IO.File.Delete(link);
+                    Debug.LogError("Symbol link src is already exists! (skip) " + link);
+                    return;
                 }
                 var si = new System.Diagnostics.ProcessStartInfo("ln", "-s \"" + target + "\"" + " \"" + link + "\"");
                 var p = System.Diagnostics.Process.Start(si);
