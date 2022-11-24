@@ -49,9 +49,7 @@ namespace Capstones.UnityEditorEx
                 HashSet<string> existingmods = new HashSet<string>();
                 foreach (var package in CapsPackageEditor.Packages.Values)
                 {
-                    if (package.status == UnityEditor.PackageManager.PackageStatus.Available
-                        && (package.source == UnityEditor.PackageManager.PackageSource.Embedded || package.source == UnityEditor.PackageManager.PackageSource.Git || package.source == UnityEditor.PackageManager.PackageSource.Local)
-                        )
+                    if (package.source == UnityEditor.PackageManager.PackageSource.Embedded || package.source == UnityEditor.PackageManager.PackageSource.Git || package.source == UnityEditor.PackageManager.PackageSource.Local)
                     {
                         var path = package.resolvedPath;
                         var mod = System.IO.Path.GetFileName(path);

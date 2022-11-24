@@ -28,9 +28,7 @@ namespace Capstones.UnityEditorEx
             {
                 foreach (var package in packages.Values)
                 {
-                    if (package.status == UnityEditor.PackageManager.PackageStatus.Available
-                        && (package.source == UnityEditor.PackageManager.PackageSource.Embedded || package.source == UnityEditor.PackageManager.PackageSource.Git || package.source == UnityEditor.PackageManager.PackageSource.Local)
-                        )
+                    if (package.source == UnityEditor.PackageManager.PackageSource.Embedded || package.source == UnityEditor.PackageManager.PackageSource.Git || package.source == UnityEditor.PackageManager.PackageSource.Local)
                     {
                         var pname = package.name;
                         var ppath = package.resolvedPath;
@@ -348,9 +346,7 @@ namespace Capstones.UnityEditorEx
 
         private static bool ShouldTreatPackageAsMod(UnityEditor.PackageManager.PackageInfo package)
         {
-            //if (package.status == UnityEditor.PackageManager.PackageStatus.Available
-            //    && (package.source == UnityEditor.PackageManager.PackageSource.Embedded || package.source == UnityEditor.PackageManager.PackageSource.Git || package.source == UnityEditor.PackageManager.PackageSource.Local)
-            //    )
+            //if (package.source == UnityEditor.PackageManager.PackageSource.Embedded || package.source == UnityEditor.PackageManager.PackageSource.Git || package.source == UnityEditor.PackageManager.PackageSource.Local)
             {
                 var path = package.resolvedPath;
                 if (!string.IsNullOrEmpty(path))
