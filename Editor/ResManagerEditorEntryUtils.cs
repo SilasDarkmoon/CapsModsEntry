@@ -171,9 +171,43 @@ namespace Capstones.UnityEditorEx
                     Debug.LogError("Symbol link src is already exists! (skip) " + link);
                     return;
                 }
-                var si = new System.Diagnostics.ProcessStartInfo("ln", "-s \"" + target + "\"" + " \"" + link + "\"");
+
+                var interdir = link + ".tmplink~";
+                System.IO.Directory.CreateDirectory(interdir);
+                var inter = interdir + "/" + System.IO.Path.GetFileName(target);
+                for (int i = 0; i < 3; ++i)
+                {
+                    if (System.IO.Directory.Exists(inter))
+                    {
+                        var dirinfo = new System.IO.DirectoryInfo(inter);
+                        if ((dirinfo.Attributes & System.IO.FileAttributes.ReparsePoint) == System.IO.FileAttributes.ReparsePoint)
+                        {
+                            DeleteDirLink(inter);
+                        }
+                        else
+                        {
+                            dirinfo.Delete();
+                        }
+                    }
+                    else if (System.IO.File.Exists(inter))
+                    {
+                        System.IO.File.Delete(inter);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (System.IO.Directory.Exists(inter) || System.IO.File.Exists(inter))
+                {
+                    Debug.LogError("Symbol link src is already exists! (skip) " + inter);
+                    return;
+                }
+                var si = new System.Diagnostics.ProcessStartInfo("ln", "-s \"" + target + "\"" + " \"" + interdir + "\"");
                 var p = System.Diagnostics.Process.Start(si);
                 p.WaitForExit();
+                System.IO.Directory.Move(inter, link);
+                System.IO.Directory.Delete(interdir, false);
             }
         }
         public static bool IsDirLink(string path)
